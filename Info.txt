@@ -1,0 +1,101 @@
+we collected a new dataset using publicly available YouTube volleyball videos. We annotated 4830 frames that were handpicked from 55 videos with 9 player action labels and 8 team activity labels. We used frames from 2/3 rd of the videos for training, and the remaining 1/3 rd for testing. The list of action and activity labels and related statistics are tabulated in following tables.
+
+Group Activity Class 	No. of Instances
+Right set 		644
+Right spike 		623
+Right pass 		801
+Right winpoint 		295
+Left winpoint 		367
+Left pass 		826
+Left spike 		642
+Left set 		633
+
+
+Action Classes 		No. of Instances
+Waiting 		3601
+Setting 		1332
+Digging 		2333
+Falling 		1241
+Spiking 		1216
+Blocking 		2458
+Jumping 		341
+Moving 			5121
+Standing 		38696
+
+
+Notes
+- The dataset is 55 videos. Each video has a directory for it with sequntial IDs (0, 1...54)
+	- Train Videos: 1 3 6 7 10 13 15 16 18 22 23 31 32 36 38 39 40 41 42 48 50 52 53 54
+	- Validation Videos: 0 2 8 12 17 19 24 26 27 28 30 33 46 49 51
+	- Test Videos: 4 5 9 11 14 20 21 25 29 34 35 37 43 44 45 47
+- Inside each video directory, a set of directories corresponds to annotated frames (e.g. volleyball/39/29885)
+- Each frame directory has 41 images (20 images before target frame, target frame, 20 frames after target frame)
+  - You can use such window as your temporal window.
+  - Scences change in fast manner in volleyball, hence frames beyond that window shouldn't represent belong to target frame most of time.
+  - In our work, we used 5 before and 4 after frames.
+- Each video directory has annotations.txt file that contains selected frames annotations.
+- Each annotation line in format: {Frame ID} {Frame Activity Class} {Player Annotation} {Player Annotation} ...
+  - Player Annotation corresponds to a tight bounding box surrounds each player
+- Each {Player Annotation} in format: {Action Class} X Y W H
+
+==============================================
+Informal info: 
+- Following is a list of youtube videos. Downloading the video and extracting the frames with correct resolution, bit rate..etc might be challenging.
+
+0	150718 FIVB World Grand Prix 2015그랑프리 China vs USA 720P
+1	Brazil vs Russian Fed. - Women's Volleyball Quarterfinal _ London 2012
+2	Brazil vs USA - Women's Volleyball Final - London 2012 Olympic Games
+3	Live - Brazil vs China - FIVB World Grand Prix Finals 2015
+4	Live - Brazil vs France - FIVB Volleyball World League Finals 2015
+5	Live - Brazil vs Japan - FIVB World Grand Prix Finals 2015
+6	Live - Brazil vs Russia - FIVB World Grand Prix Finals 2015
+7	Live - Brazil vs USA - FIVB Volleyball World League Final 2015
+8	Live - China vs Italy - FIVB World Grand Prix Finals 2015
+9	Live - China vs Russia - FIVB World Grand Prix Finals 2015
+10	Live - France vs Poland - FIVB Volleyball World League Final 2015
+11	Live - Italy vs Brazil - FIVB World Grand Prix Finals 2015
+12	Live - Italy v Turkey - FIVB Volleyball Girls' U18 World Championship Peru 2015
+13	Live - Italy vs Japan - FIVB World Grand Prix Finals 2015
+14	Live - Italy vs Russia - FIVB World Grand Prix Finals 2015
+15	Live - Japan vs China - FIVB World Grand Prix Finals 2015
+16	Live - Japan vs Russia - FIVB World Grand Prix 2015
+17	Live - Poland vs Italy - FIVB Volleyball World League Final 2015
+18	Live - Serbia vs France - FIVB Volleyball World League Finals 2015
+19	Live - Serbia vs Poland - FIVB Volleyball World League Final 2015
+20	Live - USA vs Brazil - FIVB World Grand Prix Finals 2015
+21	USA vs China _ 26 July 2015 _ Week 5 _ Final Round _ 2015 FIVB World Grand Prix
+22	Live - USA vs France - FIVB Volleyball World League Final 2015
+23	Live - USA vs Italy - FIVB World Grand Prix Finals 2015
+24	Live - USA vs Japan - FIVB World Grand Prix Finals 2015
+25	Live - USA vs Poland - FIVB Volleyball World League Finals 2015
+26	Live - USA vs Russia - FIVB World Grand Prix Finals 2015
+27	Live - USA vs Serbia - FIVB Volleyball World League Final 2015
+28	Men's Volleyball Pool B - BRA v SRB _ London 2012 Olympics
+29	Men's Volleyball Pool B - BRA v USA _ London 2012 Olympics
+30	Men's Volleyball Preliminary - BRA v GER _ London 2012 Olympics
+31	Men's Volleyball Preliminary Round - AUS v POL _ London 2012 Olympics
+32	Men's Volleyball Preliminary Round - RUS v SRB _ London 2012 Olympics
+33	Men's Volleyball Preliminary Round USA v TUN - Highlights _ London 2012 Olympics
+34	Men's Volleyball Quarter-Finals - BUL v GER _ London 2012 Olympics
+35	Men's Volleyball Quarterfinals - ITA vs USA _ London 2012 Olympics
+36	Men's Volleyball Quarter-Finals - POL v RUS _ London 2012 Olympics
+37	Volleyball - Men -  BRA-RUS - London 2012 Olympic Games
+38	Volleyball - Men -   BRA-TUN - London 2012 Olympic Games
+39	Volleyball - Men Bronze Final - London 2012 Olympic Games
+40	Volleyball - Men Gold Final & VC RUS-BRA - London 2012 Olympic Games
+41	Volleyball - Men RUS-USA - London 2012 Olympic Games
+42	Volleyball - Men SF 2 BRA-ITA - London 2012 Olympic Games
+43	Volleyball Men's Preliminary Pool A Italy v Bulgaria - Full Replay _ London 2012 Olympics
+44	Volleyball - Women Bronze Final JPN-KOR - London 2012 Olympic Games
+45	Volleyball - Women SF 2 BRA-JPN - London 2012 Olympic Games
+46	Women's Volleyball Pool A - ITA v JPN _ London 2012 Olympics
+47	Women's Volleyball Pool A - ITA v RUS _ London 2012 Olympics
+48	Women's Volleyball Pool A - JPN V GBR _ London 2012 Olympics
+49	Women's Volleyball Pool B - BRA v TUR _ London 2012 Olympics
+50	Women's Volleyball Pool B - Korea v USA _ London 2012 Olympics
+51	Women's Volleyball Pool B - CHN v KOR _ London 2012 Olympics
+52	Women's Volleyball Pool B - USA v Brazil _ London 2012 Olympics
+53	Women's Volleyball Preliminary Round - ITA v ALG _ London 2012 Olympics
+54	Women's Volleyball Quarter Finals - JPN v CHN _ London 2012 Olympics
+
+
