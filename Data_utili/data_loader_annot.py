@@ -130,9 +130,7 @@ def test_pkl_version():
 
     boxes: List[BoxInfo] = videos_annot['0']['13456']['category']
     print(boxes)
-    # print(boxes[0].category)
-    # print(boxes[0].box)
-    # print(boxes[0].generated)
+    print(boxes)
 
 
 if __name__ == '__main__':

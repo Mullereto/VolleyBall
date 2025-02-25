@@ -1,9 +1,30 @@
 import pickle
 import os
 from torchvision import transforms
+from collections import defaultdict
+from torch.utils.data import Dataset
+import cv2
+from PIL import Image
+from torch.utils.data import DataLoader
 
-class VolleyDatasets():
-    def __init__(self, dataset_root, split_type = 'train'):
+class VolleyDatasets(Dataset):
+    """Dataset class for VolleyBall videos
+
+    Args:
+        Dataset (Dataset): inherent from torch (Dataset)
+    
+    Parameters:
+        dataset_root (str): the root for the dataset
+        split_type (str): the split type neither (train, val, test)
+        
+    Attribute:
+        splits (dict): contain the id of the videos splited to (train, val, test)
+        lables (dict): contain the action in the videos
+        annot (List): contain the annnotations of all the videos
+        samples (List[dict]): contain the samples and its meta data
+        transform (transformer): the transformer that will be applied on the data 
+    """
+    def __init__(self, dataset_root:str, split_type:str):
         self.dataset_root = dataset_root
         self.split_type = split_type
         self.splits = {
@@ -11,28 +32,83 @@ class VolleyDatasets():
             'val' : [0, 2, 8, 12, 17, 19, 24, 26, 27, 28, 30, 33, 46, 49, 51],
             'test' : [4, 5, 9, 11, 14, 20, 21, 25, 29, 34, 35, 37, 43, 44, 45, 47],
         }
-        self.load_annot = self.load_annotations()
+        
+        self.lables = {
+            'waiting' : 0,
+            'setting' : 1,
+            'digging': 2,  
+            'falling': 3,  
+            'spiking': 4,  
+            'blocking': 5,  
+            'jumping': 6,  
+            'moving': 7,  
+            'standing': 8,  
+        }
+        
+        self.annot = self.__load_annotations()
         self.samples, self.class_count = self.generate_samples()
         self.transform = self.do_transform(split=split_type)
         
-        
-        
-    def __getitem__(self):
-        pass
     
-    def load_annotations(self):
+    def __len__(self):
+        return len(self.samples)
+        
+    def __getitem__(self, idx):
+        sample = self.samples[idx]
+        frame_path = os.path.join(self.dataset_root, 'videos',sample['vid_id'], sample['clip_id'], f"{sample['frame_id']}.jpg")
+        frame = cv2.imread(frame_path) 
+        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        
+        x1,y1,x2,y2 = sample['box']
+
+        image_croped = frame[y1:y2, x1:x2]
+        image = Image.fromarray(image_croped)
+        
+        image = self.transform(img=image)
+        
+        return image, self.lables[sample['player_action']]
+        
+
+    
+    def __load_annotations(self):
         annot_path = os.path.join(self.dataset_root, 'annot_all_3frames.pkl')
         if not os.path.exists(annot_path):
-            raise 
+            raise FileNotFoundError(f"Annotation file not found: {annot_path}")
         with open(f'{self.dataset_root}/annot_all_3frames.pkl', 'rb') as file:
-            videos_annot = pickle.load(file)
-        
-        return videos_annot
+            return pickle.load(file)
     
     
     def generate_samples(self):
-        pass
-    
+        sambles = []
+        class_count = defaultdict(int)
+        
+        for vid_id in map(str, self.splits[self.split_type]):
+            if vid_id not in self.annot:
+                print(f"Warning: Video {vid_id} not found in annotations")
+                continue
+            for clip_id, clip_data in self.annot[vid_id].items():
+                frame_ids = sorted(clip_data['frame_boxes_dct'].keys())
+                selected_frame_id = frame_ids[len(frame_ids)//2]
+
+                frame_path = os.path.join(self.dataset_root, 'videos', vid_id, clip_id , f"{selected_frame_id}.jpg")
+                if not os.path.exists(frame_path):
+                    print(f"Warrning this frame dose not exist{frame_path}")
+                    continue
+                boxs = clip_data['frame_boxes_dct'][selected_frame_id]
+                for box in boxs:
+                    if box.category not in self.lables:
+                        continue
+                    sambles.append({
+                        'vid_id' : vid_id,
+                        'clip_id' : clip_id,
+                        'frame_id' : selected_frame_id,
+                        'box' : box.box,
+                        'player_action' : box.category, 
+                    })
+                    class_count[box.category]+=1
+
+        return sambles, class_count
+               
     def do_transform(self, split):
         if split == 'train':
             transformer = transforms.Compose([
@@ -50,3 +126,21 @@ class VolleyDatasets():
                 transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
             ])
         return transformer
+
+def do_dataLoader(data_path:str, split_type:str, batch_size:int, num_workers:int, shuffle = True, ):
+    dataset = VolleyDatasets(dataset_root=data_path, split_type=split_type)
+    dataloader = DataLoader(dataset, batch_size=batch_size, num_workers=num_workers, shuffle=shuffle)
+    
+    return dataloader
+
+if __name__ == '__main__':
+    path =r'D:\project\Python\DL(Mostafa saad)\Project\VolleyBall\Data'
+    d = VolleyDatasets(path, 'train')
+
+    
+    
+    train_loader = DataLoader(d, batch_size=32, shuffle=False)
+    
+    for batch in train_loader:
+        images, labels = batch
+        print(images.shape, labels)
