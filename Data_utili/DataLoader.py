@@ -1,3 +1,7 @@
+import sys
+
+# adding Folder_2/subfolder to the system path
+sys.path.insert(0, r"D:\project\Python\DL(Mostafa saad)\Project\VolleyBall\Data_utili")
 import pickle
 import os
 from torchvision import transforms
@@ -24,7 +28,7 @@ class VolleyDatasets(Dataset):
         samples (List[dict]): contain the samples and its meta data
         transform (transformer): the transformer that will be applied on the data 
     """
-    def __init__(self, dataset_root:str, split_type:str):
+    def __init__(self, dataset_root:str, split_type:str, mode:str):
         self.dataset_root = dataset_root
         self.split_type = split_type
         self.splits = {
@@ -32,21 +36,34 @@ class VolleyDatasets(Dataset):
             'val' : [0, 2, 8, 12, 17, 19, 24, 26, 27, 28, 30, 33, 46, 49, 51],
             'test' : [4, 5, 9, 11, 14, 20, 21, 25, 29, 34, 35, 37, 43, 44, 45, 47],
         }
+        self.mode = mode
         
-        self.lables = {
-            'waiting' : 0,
-            'setting' : 1,
-            'digging': 2,  
-            'falling': 3,  
-            'spiking': 4,  
-            'blocking': 5,  
-            'jumping': 6,  
-            'moving': 7,  
-            'standing': 8,  
-        }
+        if self.mode == 'player_action':
+            self.lables = {
+                'waiting' : 0,
+                'setting' : 1,
+                'digging': 2,  
+                'falling': 3,  
+                'spiking': 4,  
+                'blocking': 5,  
+                'jumping': 6,  
+                'moving': 7,  
+                'standing': 8,  
+            }
+        else:
+            self.lables = {
+                'l-pass': 0,
+                'r-pass': 1,
+                'l-spike': 2,
+                'r_spike': 3,
+                'l_set': 4,
+                'r_set': 5,
+                'l_winpoint': 6,
+                'r_winpoint': 7
+            }    
         
         self.annot = self.__load_annotations()
-        self.samples, self.class_count = self.generate_samples()
+        self.samples, self.class_count = self._generate_samples()
         self.transform = self.do_transform(split=split_type)
         
     
@@ -55,18 +72,22 @@ class VolleyDatasets(Dataset):
         
     def __getitem__(self, idx):
         sample = self.samples[idx]
-        frame_path = os.path.join(self.dataset_root, 'videos',sample['vid_id'], sample['clip_id'], f"{sample['frame_id']}.jpg")
-        frame = cv2.imread(frame_path) 
-        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        
-        x1,y1,x2,y2 = sample['box']
+        if self.mode in ['player_action', 'group_activity']:
+            frame_path = os.path.join(self.dataset_root, 'videos',sample['vid_id'], sample['clip_id'], f"{sample['frame_id']}.jpg")
+            frame = cv2.imread(frame_path) 
+            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            if self.mode == 'player_action':
+                x1,y1,x2,y2 = sample['box']
 
-        image_croped = frame[y1:y2, x1:x2]
-        image = Image.fromarray(image_croped)
-        
-        image = self.transform(img=image)
-        
-        return image, self.lables[sample['player_action']]
+                image = frame[y1:y2, x1:x2]
+
+            elif self.mode == 'group_activity':
+                image = frame
+                
+            image = Image.fromarray(frame)
+            
+            image = self.transform(img=image)
+            return image, self.lables[sample['player_action']] if self.mode == 'player_action' else self.lables[sample['group_activity']]
         
 
     
@@ -75,10 +96,10 @@ class VolleyDatasets(Dataset):
         if not os.path.exists(annot_path):
             raise FileNotFoundError(f"Annotation file not found: {annot_path}")
         with open(f'{self.dataset_root}/annot_all_3frames.pkl', 'rb') as file:
-            return pickle.load(file)
+            v = pickle.load(file)
+            return v
     
-    
-    def generate_samples(self):
+    def _generate_samples(self):
         sambles = []
         class_count = defaultdict(int)
         
@@ -94,18 +115,27 @@ class VolleyDatasets(Dataset):
                 if not os.path.exists(frame_path):
                     print(f"Warrning this frame dose not exist{frame_path}")
                     continue
-                boxs = clip_data['frame_boxes_dct'][selected_frame_id]
-                for box in boxs:
-                    if box.category not in self.lables:
-                        continue
+                if self.mode == 'group_activity':
                     sambles.append({
                         'vid_id' : vid_id,
                         'clip_id' : clip_id,
                         'frame_id' : selected_frame_id,
-                        'box' : box.box,
-                        'player_action' : box.category, 
+                        'group_activity' : clip_data['category'], 
                     })
-                    class_count[box.category]+=1
+                    class_count[clip_data['category']]+=1
+                elif self.mode == 'player_action':
+                    boxs = clip_data['frame_boxes_dct'][selected_frame_id]
+                    for box in boxs:
+                        if box.category not in self.lables:
+                            continue
+                        sambles.append({
+                            'vid_id' : vid_id,
+                            'clip_id' : clip_id,
+                            'frame_id' : selected_frame_id,
+                            'box' : box.box,
+                            'player_action' : box.category, 
+                        })
+                        class_count[box.category]+=1
 
         return sambles, class_count
                
@@ -127,19 +157,18 @@ class VolleyDatasets(Dataset):
             ])
         return transformer
 
-def do_dataLoader(data_path:str, split_type:str, batch_size:int, num_workers:int, shuffle = True, ):
-    dataset = VolleyDatasets(dataset_root=data_path, split_type=split_type)
+def do_dataLoader(data_path:str, split_type:str, mode:str, batch_size:int, num_workers:int, shuffle = True, ):
+    dataset = VolleyDatasets(dataset_root=data_path, split_type=split_type, mode=mode)
     dataloader = DataLoader(dataset, batch_size=batch_size, num_workers=num_workers, shuffle=shuffle)
     
     return dataloader
 
 if __name__ == '__main__':
     path =r'D:\project\Python\DL(Mostafa saad)\Project\VolleyBall\Data'
-    d = VolleyDatasets(path, 'train')
 
     
     
-    train_loader = DataLoader(d, batch_size=32, shuffle=False)
+    train_loader = do_dataLoader(path, 'train', 'group_activity',25, 0)
     
     for batch in train_loader:
         images, labels = batch
