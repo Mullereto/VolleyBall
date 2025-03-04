@@ -9,6 +9,7 @@ from collections import defaultdict
 from torch.utils.data import Dataset
 import cv2
 from PIL import Image
+import torch
 from torch.utils.data import DataLoader
 
 class VolleyDatasets(Dataset):
@@ -28,7 +29,7 @@ class VolleyDatasets(Dataset):
         samples (List[dict]): contain the samples and its meta data
         transform (transformer): the transformer that will be applied on the data 
     """
-    def __init__(self, dataset_root:str, split_type:str, mode:str):
+    def __init__(self, dataset_root:str, split_type:str, mode:str, use_all_frames = False):
         self.dataset_root = dataset_root
         self.split_type = split_type
         self.splits = {
@@ -37,6 +38,7 @@ class VolleyDatasets(Dataset):
             'test' : [4, 5, 9, 11, 14, 20, 21, 25, 29, 34, 35, 37, 43, 44, 45, 47],
         }
         self.mode = mode
+        self.use_all_frames = use_all_frames
         
         if self.mode == 'player_action':
             self.lables = {
@@ -64,8 +66,11 @@ class VolleyDatasets(Dataset):
         
         self.annot = self.__load_annotations()
         self.samples, self.class_count = self._generate_samples()
-        self.transform = self.do_transform(split=split_type)
-        
+        if self.mode == 'player_action' or self.mode == 'group_activity':
+            self.transform = self.do_transform()
+
+        else:
+            self.transform = self.do_tranform_featuers()
     
     def __len__(self):
         return len(self.samples)
@@ -78,16 +83,58 @@ class VolleyDatasets(Dataset):
             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             if self.mode == 'player_action':
                 x1,y1,x2,y2 = sample['box']
+                
+                x1, y1, x2, y2 = map(int, [x1, y1, x2, y2])
 
                 image = frame[y1:y2, x1:x2]
 
             elif self.mode == 'group_activity':
                 image = frame
-                
+            
             image = Image.fromarray(frame)
             
             image = self.transform(img=image)
             return image, self.lables[sample['player_action']] if self.mode == 'player_action' else self.lables[sample['group_activity']]
+        
+        elif self.mode == 'player_features_extraction':
+            video_path = os.path.join(self.dataset_root, 'videos',sample['vid_id'], sample['clip_id'], sample['frame_id'])
+            
+            frame_detel = []
+            
+            for frame in sample['frame_id']:
+                frame_boxes = self.annot[sample['vid_id']][sample['clip_id']]['frame_boxes_dct'][frame]
+                
+                frame_boxes.sort(key=lambda box:box.box[0])
+                
+                player_corped = []
+                player_corped_id = []
+                
+                for box in frame_boxes:
+                    frame_path = os.path.join(video_path, f'{frame}.jpg')
+                    frame = cv2.imread(frame_path)
+                    frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                    
+                    x1, y1, x2, y2 = map(int, box.box)
+                    player_crop = frame[y1:y2, x1:x2]
+                    player_crop = Image.fromarray(player_crop)
+                    player_crop = self.transform(player_crop)
+                    
+                    player_corped.append(player_crop)
+                    player_corped_id.append(box.player_ID)
+                    
+                    frame_detel.append(torch.stack(player_corped))
+            return {
+                'frames_data': frame_detel,
+                'label': self.lables[sample['activity']],
+                'meta': {
+                    'video_id': sample['vid_id'],
+                    'clip_id': sample['clip_id'],
+                    'frame_ids': sample['frame_id']
+                }
+            }        
+                    
+                    
+                    
         
 
     
@@ -109,33 +156,42 @@ class VolleyDatasets(Dataset):
                 continue
             for clip_id, clip_data in self.annot[vid_id].items():
                 frame_ids = sorted(clip_data['frame_boxes_dct'].keys())
-                selected_frame_id = frame_ids[len(frame_ids)//2]
-
-                frame_path = os.path.join(self.dataset_root, 'videos', vid_id, clip_id , f"{selected_frame_id}.jpg")
-                if not os.path.exists(frame_path):
-                    print(f"Warrning this frame dose not exist{frame_path}")
-                    continue
-                if self.mode == 'group_activity':
-                    sambles.append({
-                        'vid_id' : vid_id,
-                        'clip_id' : clip_id,
-                        'frame_id' : selected_frame_id,
-                        'group_activity' : clip_data['category'], 
-                    })
-                    class_count[clip_data['category']]+=1
-                elif self.mode == 'player_action':
-                    boxs = clip_data['frame_boxes_dct'][selected_frame_id]
-                    for box in boxs:
-                        if box.category not in self.lables:
+                selected_frame_id = frame_ids if self.use_all_frames == True else  [frame_ids[len(frame_ids) // 2]]
+                if self.mode in ['player_action', 'group_activity']:
+                    for fram_id in selected_frame_id:
+                        frame_path = os.path.join(self.dataset_root, 'videos', vid_id, clip_id , f"{fram_id}.jpg")
+                        if not os.path.exists(frame_path):
+                            print(f"Warrning this frame dose not exist{frame_path}")
                             continue
-                        sambles.append({
-                            'vid_id' : vid_id,
-                            'clip_id' : clip_id,
-                            'frame_id' : selected_frame_id,
-                            'box' : box.box,
-                            'player_action' : box.category, 
-                        })
-                        class_count[box.category]+=1
+                        if self.mode == 'group_activity':
+                            sambles.append({
+                                'vid_id' : vid_id,
+                                'clip_id' : clip_id,
+                                'frame_id' : fram_id,
+                                'group_activity' : clip_data['category'], 
+                            })
+                            class_count[clip_data['category']]+=1
+                            
+                        elif self.mode == 'player_action':
+                            boxs = clip_data['frame_boxes_dct'][fram_id]
+                            for box in boxs:
+                                if box.category not in self.lables:
+                                    continue
+                                sambles.append({
+                                    'vid_id' : vid_id,
+                                    'clip_id' : clip_id,
+                                    'frame_id' : fram_id,
+                                    'box' : box.box,
+                                    'player_action' : box.category, 
+                                })
+                                class_count[box.category]+=1
+                elif self.mode == 'player_features_extraction':
+                    sambles.append({
+                                'vid_id' : vid_id,
+                                'clip_id' : clip_id,
+                                'frame_id' : fram_id,
+                                'activity' : clip_data['category'], 
+                            })
 
         return sambles, class_count
                
@@ -156,20 +212,17 @@ class VolleyDatasets(Dataset):
                 transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
             ])
         return transformer
+    
+    def do_tranform_featuers(self):
+        transformer = transforms.Compose([
+            transforms.Resize((224,224)),
+            transforms.ToTensor(),
+            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+    ])       
+        return transformer
 
-def do_dataLoader(data_path:str, split_type:str, mode:str, batch_size:int, num_workers:int, shuffle = True, ):
-    dataset = VolleyDatasets(dataset_root=data_path, split_type=split_type, mode=mode)
+def do_dataLoader(data_path:str, split_type:str, mode:str, batch_size:int, num_workers:int, shuffle = True, use_all_frames=False):
+    dataset = VolleyDatasets(dataset_root=data_path, split_type=split_type, mode=mode, use_all_frames=use_all_frames)
     dataloader = DataLoader(dataset, batch_size=batch_size, num_workers=num_workers, shuffle=shuffle)
     
     return dataloader
-
-if __name__ == '__main__':
-    path =r'D:\project\Python\DL(Mostafa saad)\Project\VolleyBall\Data'
-
-    
-    
-    train_loader = do_dataLoader(path, 'train', 'group_activity',25, 0)
-    
-    for batch in train_loader:
-        images, labels = batch
-        print(images.shape, labels)

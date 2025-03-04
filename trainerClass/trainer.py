@@ -5,9 +5,7 @@ import torch.nn as nn
 from torch.cuda.amp import autocast, GradScaler
 from sklearn.metrics import f1_score, accuracy_score
 from tqdm import tqdm
-from Handeler.load_save import load_config
 
-# Load config.yml)
 
 class Trainer:
     def __init__(self, model, config ,train_loader, val_loader):
@@ -20,7 +18,7 @@ class Trainer:
         self.criterion = nn.CrossEntropyLoss()
         self.optimizer = optim.AdamW(self.model.parameters(), lr=self.config["lr"], weight_decay=1e-3)
         self.scheduler = optim.lr_scheduler.ReduceLROnPlateau(
-            optimizer=self.optimizer, mode="min", factor=0.1, patience=3, cooldown=1, min_lr=1e-6, verbose=True
+            optimizer=self.optimizer, mode="min", factor=0.1, patience=2, cooldown=1, min_lr=1e-6, verbose=True
         )
         self.scaler = GradScaler(enabled=False)
 

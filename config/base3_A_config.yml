@@ -1,0 +1,9 @@
+device: "cuda"  # or "cpu"
+epoch: 10
+lr: 0.0001
+save_dir: "results/baseline1"
+batch_size: 64
+class_names: ['waiting' ,'setting', 'digging', 'falling', 'spiking', 'blocking', 'jumping', 'moving', 'standing']
+dataset_path: 'D:/project/Python/DL(Mostafa saad)/Project/VolleyBall/Data'
+num_workers: 0
+beast_model_path: 'D:\project\Python\DL(Mostafa saad)\Project\VolleyBall\results\baseline3\best_model.pth'
