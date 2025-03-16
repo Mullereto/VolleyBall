@@ -40,5 +40,5 @@ class Evaluator:
         avg_test_loss = running_loss / len(self.test_loader)
 
         print(f"Test Loss: {avg_test_loss:.4f} | Test F1 Score: {test_f1:.4f} | Test Accuracy: {test_acc:.4f}")
-        save_classification_report(all_labels, all_predicted, self.config["class_names"], 'baseline1')
-        plot_confusion_matrix(all_labels, all_predicted, self.config["class_names"], 'baseline1')
+        save_classification_report(all_labels, all_predicted, self.config["class_names"], self.config["save_dir"])
+        plot_confusion_matrix(all_labels, all_predicted, self.config["class_names"], self.config["save_dir"])

@@ -1,0 +1,12 @@
+device: "cuda"
+epoch: 30
+lr: 0.0001
+optimizer_cooldown: 0
+save_dir: "results/baseline3/phase3"
+batch_size: 24
+shuffle: False
+class_names: ['l-pass', 'r-pass', 'l-spike', 'r_spike', 'l_set', 'r_set', 'l_winpoint', 'r_winpoint']
+dataset_path: 'D:/project/Python/DL(Mostafa saad)/Project/VolleyBall/results/baseline3/phase2'
+num_workers: 4
+beast_model_path: 'D:\project\Python\DL(Mostafa saad)\Project\VolleyBall\results\baseline3\best_model.pth'
+the_scheduler: "ReduceLROnPlateau"

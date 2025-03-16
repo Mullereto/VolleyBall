@@ -1,13 +1,24 @@
 import torch.nn as nn
+import torch
 from torchvision import models
 
 class FeatureExtractor(nn.Module):
-    def __init__(self):
+    def __init__(self, model_path):
         super(FeatureExtractor, self).__init__()
         
-        self.model = models.resnet50(weights=models.ResNet50_Weights.IMAGENET1K_V2)
-        self.FeatureExtractor = nn.Sequential(*list(self.model.children())[:-1])
+        self.model = models.resnet50(pretrained = False)
+        
+        self.model.fc = nn.Linear(in_features=2048, out_features=9)
+        
+        trained_model = torch.load(model_path)
+        
+        self.model.load_state_dict(trained_model, strict=False)
+        
+        self.features = nn.Sequential(*list(self.model.children())[:-1])
+        
+        for param in self.features.parameters():
+            param.requires_grad = False
         
     def forward(self, x):
-        x = self.FeatureExtractor(x)
+        x = self.features(x)
         return x.view(x.size(0), -1)

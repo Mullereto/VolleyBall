@@ -1,0 +1,12 @@
+device: "cuda"
+epoch: 25
+lr: 0.0001
+optimizer_cooldown: 0
+save_dir: "results/baseline3/phase2"
+batch_size: 1
+shuffle: True
+class_names: ['waiting' ,'setting', 'digging', 'falling', 'spiking', 'blocking', 'jumping', 'moving', 'standing']
+dataset_path: 'D:/project/Python/DL(Mostafa saad)/Project/VolleyBall/Data'
+num_workers: 4
+beast_model_path: 'D:\project\Python\DL(Mostafa saad)\Project\VolleyBall\results\baseline3\best_model.pth'
+the_scheduler: "ReduceLROnPlateau"

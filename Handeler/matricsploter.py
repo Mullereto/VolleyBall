@@ -14,15 +14,15 @@ def plot_confusion_matrix(y_true, y_pred, class_names, baseline_num=None):
     plt.show()
     
     if baseline_num:
-        path = r'D:\project\Python\DL(Mostafa saad)\Project\VolleyBall\results'
-        path = os.path.join(path, baseline_num, "Confusion Matrix.jpg")
+        path = r'D:\project\Python\DL(Mostafa saad)\Project\VolleyBall'
+        path = os.path.join(path, baseline_num, "Confusion Matrix")
         plt.savefig(path)
         print(f"Confusion matrix saved to {path}")
 
 def save_classification_report(y_true, y_pred, class_names, baseline_num):
     """Save the classification report to a text file."""
     report = classification_report(y_true, y_pred, target_names=class_names)
-    path = r'D:\project\Python\DL(Mostafa saad)\Project\VolleyBall\results'
+    path = r'D:\project\Python\DL(Mostafa saad)\Project\VolleyBall'
     path = os.path.join(path, baseline_num, "classification.txt")
     with open(path, "w") as f:
         f.write(report)

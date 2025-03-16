@@ -1,0 +1,15 @@
+              precision    recall  f1-score   support
+
+     waiting       0.56      0.48      0.52      1040
+     setting       0.83      0.73      0.77       372
+     digging       0.53      0.34      0.41       659
+     falling       0.84      0.78      0.81       377
+     spiking       0.76      0.70      0.73       372
+    blocking       0.89      0.82      0.85       855
+     jumping       0.09      0.05      0.06        88
+      moving       0.63      0.54      0.58      1352
+    standing       0.86      0.92      0.89     10819
+
+    accuracy                           0.81     15934
+   macro avg       0.67      0.59      0.62     15934
+weighted avg       0.80      0.81      0.80     15934

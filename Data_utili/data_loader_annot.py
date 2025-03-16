@@ -20,10 +20,10 @@ def load_tracking_annot(path):
         # let's create view from frame to boxes
         for player_ID, boxes_info in player_boxes.items():
             # let's keep the middle 9 frames only (enough for this task empirically)
-            # boxes_info = boxes_info[6:]
-            # boxes_info = boxes_info[:-5]
+            boxes_info = boxes_info[6:]
+            boxes_info = boxes_info[:-5]
             # let's keep the middle 3 frames only (enough for this task empirically)
-            # boxes_info = boxes_info[9:12]
+            #boxes_info = boxes_info[9:12]
 
             for box_info in boxes_info:
                 if box_info.frame_ID not in frame_boxes_dct:
