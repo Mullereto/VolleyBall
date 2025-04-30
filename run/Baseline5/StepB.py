@@ -1,0 +1,30 @@
+import sys
+# adding Folder_2/subfolder to the system path
+sys.path.insert(0, r"D:\project\Python\DL(Mostafa saad)\Project\VolleyBall")
+from Model_classes.Baseline5 import for_group, Baseline5_feature_extractor_per_person
+from Data_utili.DataLoader import do_dataLoader
+from trainerClass.trainer import Trainer
+from trainerClass.Evaluator import Evaluator
+from Handeler.load_save import load_config
+import torch
+
+config = load_config(r"D:\project\Python\DL(Mostafa saad)\Project\VolleyBall\config\base5_B_config.yml")
+
+if __name__ == '__main__':
+    #train_loader = do_dataLoader(config['dataset_path'], 'train', 'player_features_extraction',batch_size=config['batch_size'], num_workers=config['num_workers'], shuffle=True, pin_memory=config["pin_memory"], crop_seq=True, use_all_frames=True)
+    #val_loader = do_dataLoader(config['dataset_path'], 'val', 'player_features_extraction', batch_size=config['batch_size'], num_workers=config['num_workers'], shuffle=config["shuffle"], pin_memory=config["pin_memory"], crop_seq=True, use_all_frames=True)
+    test_loader = do_dataLoader(config['dataset_path'], 'test', 'player_features_extraction', batch_size=config['batch_size'], num_workers=config['num_workers'], shuffle=config["shuffle"], pin_memory=config["pin_memory"], crop_seq=True, use_all_frames=True)
+    
+    person_feature = Baseline5_feature_extractor_per_person()
+    check_point = torch.load(config['state_dict'], map_location=config['device'])
+    person_feature.load_state_dict(check_point, strict=False)
+    
+    model = for_group(person_feature)
+    
+    
+    #trainer = Trainer(model, config, train_loader, val_loader)
+    #trainer.train()
+    
+    evalutor = Evaluator(model, config, test_loader)
+    evalutor.evaluate()
+    

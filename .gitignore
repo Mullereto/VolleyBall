@@ -1,4 +1,4 @@
 Data/
 __pycache__/
-*.pth
 *.pt
+*.pth

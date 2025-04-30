@@ -2,7 +2,7 @@ import yaml
 import torch
 import torch.optim as optim
 import torch.nn as nn
-from torch.cuda.amp import autocast, GradScaler
+from torch.amp import autocast, GradScaler
 from sklearn.metrics import f1_score, accuracy_score
 from tqdm import tqdm
 from sklearn.utils.class_weight import compute_class_weight
@@ -17,12 +17,12 @@ class Trainer:
         self.val_loader = val_loader
         self.device = torch.device(self.config["device"])
         self.model = model.to(self.device)
-        #print("🔍 Model Summary:")
-        #summary(model, input_size=(24, 9, 12, 2048), col_names=["input_size", "output_size", "num_params"])
+        print("🔍 Model Summary:")
+        #summary(model, input_size=(config["batch_size"], 9, 12, 2048), col_names=["input_size", "output_size", "num_params"])
         
         self.epoch = self.config["epoch"]
         self.criterion = nn.CrossEntropyLoss()
-        self.optimizer = optim.AdamW(self.model.parameters(), lr=self.config["lr"], weight_decay=1e-3)
+        self.optimizer = optim.AdamW(self.model.parameters(), lr=self.config["lr"])
         if config["the_scheduler"] == "OneCycleLR":
             self.scheduler = optim.lr_scheduler.OneCycleLR(
                 optimizer=self.optimizer,
@@ -49,14 +49,17 @@ class Trainer:
             print(f"Current LR: {self.optimizer.param_groups[0]['lr']}")
 
             for img, label in tqdm(self.train_loader, desc=f"Epoch {epoch + 1} [Training]"):
+                #print(type(img))
+                print("#################")
+                #print(len(img))
                 # if batch_idx >= overfit_batches:  # Stop after `overfit_batches` batches
                 #     break
-                
+                print(img.shape)
                 img, label = img.to(self.device), label.to(self.device)
                 self.optimizer.zero_grad()
-                print("Feature shape:", img.shape)  # Should be (batch_size, 9, 12, 2048)
-                print("Label shape:", label.shape) 
-                with autocast():
+                #print("Feature shape:", img.shape)  # Should be (batch_size, 9, 12, 2048)
+                #print("Label shape:", label.shape) 
+                with autocast(device_type='cuda'):
                     output = self.model(img)
                     loss = self.criterion(output, label)
 
@@ -66,6 +69,8 @@ class Trainer:
 
                 running_loss += loss.item()
                 _, predicted = torch.max(output, 1)
+                del output
+                torch.cuda.empty_cache()
                 all_labels.extend(label.cpu().numpy())
                 all_predicted.extend(predicted.cpu().numpy())
 
@@ -75,7 +80,7 @@ class Trainer:
 
             print(f"Train Loss: {train_loss:.4f} | Train F1: {train_f1:.4f} | Train Acc: {train_acc:.4f}")
 
-            # Validate Model
+            # # Validate Model
             val_loss, val_f1, val_acc = self.validate()
 
             self.scheduler.step(val_loss)  
