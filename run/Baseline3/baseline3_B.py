@@ -54,12 +54,17 @@ if __name__ == '__main__':
                     per_clip_feature.append(players_features.cpu().numpy())
                         
                 #print("before the stacking :" ,len(per_clip_feature))
-                per_clip_feature = np.stack(per_clip_feature)
+                clip_feature = np.stack(per_clip_feature)
                 
                 key = f"{meta['video_id'][0]}_{meta['clip_id'][0]}"
                 split_features[key] = {
-                    'features': per_clip_feature,
-                    'label': label
+                    'features': clip_feature,
+                    'label': label,
+                    'meta': {
+                        'video_id': meta['video_id'][0],
+                        'clip_id': meta['clip_id'][0],
+                        'frame_ids': meta['frame_ids'][0]
+                    }
                 }
         save_path = os.path.join(config['save_dir'], f"{split}_features.pt")
         

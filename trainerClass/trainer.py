@@ -50,11 +50,11 @@ class Trainer:
 
             for img, label in tqdm(self.train_loader, desc=f"Epoch {epoch + 1} [Training]"):
                 #print(type(img))
-                print("#################")
+                #print("#################")
                 #print(len(img))
                 # if batch_idx >= overfit_batches:  # Stop after `overfit_batches` batches
                 #     break
-                print(img.shape)
+                #print(img.shape)
                 img, label = img.to(self.device), label.to(self.device)
                 self.optimizer.zero_grad()
                 #print("Feature shape:", img.shape)  # Should be (batch_size, 9, 12, 2048)
@@ -107,7 +107,6 @@ class Trainer:
 
                 running_loss += loss.item()
                 _, predicted = torch.max(output, 1)
-
                 all_predicted.extend(predicted.cpu().numpy())
                 all_labels.extend(label.cpu().numpy())
 

@@ -193,7 +193,6 @@ class VolleyDatasets(Dataset):
                     }
                 elif self.crop_seq == True:
                     padded_frames = []
-                        
                     for frame in frame_detel:
                         num_players = frame.shape[0]
                         if num_players < 12:
@@ -205,7 +204,6 @@ class VolleyDatasets(Dataset):
                         padded_frames.append(frame)
                     
                     frame_tensor = torch.stack(padded_frames)  # Now stack safely
-                    #labels = torch.full((frame_tensor.shape[1]), self.lables[sample['activity']], dtype=torch.long)  # (frames,)
                     return frame_tensor, self.lables[sample['activity']]
 
             else:
@@ -363,12 +361,12 @@ class FeaturesData(Dataset):
         label = torch.LongTensor([self.label[idx]]).squeeze()  # Single label
         
         # ✅ Max pool over players (bbox)
-        features, _ = torch.max(features, dim=1)  # Shape: (frames, features)
+        #features, _ = torch.max(features, dim=1)  # Shape: (frames, features)
 
         # ✅ Duplicate labels for each frame
-        labels = torch.full((features.shape[0],), label, dtype=torch.long)  # (frames,)
+        #labels = torch.full((features.shape[0],), label, dtype=torch.long)  # (frames,)
 
-        return features, labels
+        return features, label
 
 def collate_fn(batch):
     xs, ys = zip(*batch)  # Unpack batch
@@ -396,7 +394,7 @@ def do_dataLoader(data_path:str, split_type:str, mode:str, batch_size:int, num_w
     elif mode == 'player_features':
         dataset = FeaturesData(features_path=data_path)
         
-        dataloader = DataLoader(dataset,batch_size=batch_size, num_workers=num_workers, shuffle=shuffle, pin_memory=pin_memory, collate_fn=collate_fn)
+        dataloader = DataLoader(dataset,batch_size=batch_size, num_workers=num_workers, shuffle=shuffle, pin_memory=pin_memory)
     return dataloader
 
 
