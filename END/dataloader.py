@@ -19,6 +19,7 @@ from torch.utils.data import DataLoader
 from torch.utils.data import WeightedRandomSampler
 import matplotlib.pyplot as plt
 from boxinfo import BoxInfo
+
 class EndDataSet(Dataset):
     """Dataset class for VolleyBall videos
 
@@ -36,7 +37,7 @@ class EndDataSet(Dataset):
         samples (List[dict]): contain the samples and its meta data
         transform (transformer): the transformer that will be applied on the data 
     """
-    def __init__(self, dataset_root:str, split_type:str, mode:str):
+    def __init__(self, dataset_root:str, split_type:str):
         self.dataset_root = dataset_root
         self.split_type = split_type
         self.splits = {
@@ -44,7 +45,7 @@ class EndDataSet(Dataset):
             'val' : [0, 2, 8, 12, 17, 19, 24, 26, 27, 28, 30, 33, 46, 49, 51],
             'test' : [4, 5, 9, 11, 14, 20, 21, 25, 29, 34, 35, 37, 43, 44, 45, 47],
         }
-        self.mode = mode
+
         self.lables =[{                                         #first element in the list is for player action
                 'blocking': 0,                                  #second element in the list is for group activity
                 'digging': 1, 
@@ -210,17 +211,50 @@ class EndDataSet(Dataset):
         group_labels = torch.stack(group_labels) #(9, 8)(FRAMES, CLASSES)
 
         return clip, person_labels, group_labels
-       
-        
-            
-        
-
-
-def do_dataLoader(data_path:str, split_type:str, mode:str, batch_size:int, num_workers:int, shuffle:bool, pin_memory:bool):
-    dataset = EndDataSet(data_path, split_type, mode)
-    dataloader = DataLoader(dataset, batch_size=batch_size, num_workers=num_workers, shuffle=shuffle, pin_memory=pin_memory)
+          
+def collate_fn(batch):
+    clips, person_labels, group_labels  = zip(*batch)  
     
-    return dataloader
+    max_bboxes = 12  
+    padded_clips = []
+    padded_person_labels = []
+
+    for clip, label in zip(clips, person_labels) :
+        num_bboxes = clip.size(0)
+        if num_bboxes < max_bboxes:
+            clip_padding = torch.zeros((max_bboxes - num_bboxes, clip.size(1), clip.size(2), clip.size(3), clip.size(4)))
+            label_padding = torch.zeros((max_bboxes - num_bboxes, label.size(1), label.size(2)))
+            
+            clip = torch.cat((clip, clip_padding), dim=0)
+            label = torch.cat((label, label_padding), dim=0)
+            
+        padded_clips.append(clip)
+        padded_person_labels.append(label)
+    
+    padded_clips = torch.stack(padded_clips)
+    padded_person_labels = torch.stack(padded_person_labels)
+    group_labels = torch.stack(group_labels)
+    
+    group_labels = group_labels[:,-1, :] # # utils the label of last frame
+    padded_person_labels = padded_person_labels[:, :, -1, :]  # utils the label of last frame for each player
+    b, bb, num_class = padded_person_labels.shape # batch, bbox, num_clases
+    padded_person_labels = padded_person_labels.view(b*bb, num_class)
+
+    return padded_clips, padded_person_labels, group_labels
+
+def get_sampler_weights(dataset):
+    labels = []
+    for idx in range(len(dataset)):
+        _, _, group_label = dataset[idx]
+        labels.append(group_label[-1].argmax().item()) # take one label of the 9 frame 
+    
+    class_counts = torch.bincount(torch.tensor(labels))
+
+    class_weights = (1.0 / class_counts.float()) 
+    class_weights = class_weights / class_weights.sum()
+    
+    return class_weights
+
 
 
     
