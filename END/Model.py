@@ -28,14 +28,14 @@ class EndModel(nn.Module):
             nn.Linear(256, 128),
             nn.LayerNorm(128),
             nn.ReLU(),
-            nn.Dropout(0.5),
+            nn.Dropout(0.6),
             nn.Linear(128, person_num_classes)
         )
         
-        self.norm2 = nn.LayerNorm(512)
+        self.norm2 = nn.LayerNorm(hidden_size)
         
         self.gru2 = nn.GRU(
-            input_size=512,
+            input_size=hidden_size,
             hidden_size=hidden_size,
             num_layers=num_layers,
             batch_first=True,
@@ -50,7 +50,7 @@ class EndModel(nn.Module):
             nn.Linear(256, 128),
             nn.LayerNorm(128),
             nn.ReLU(),
-            nn.Dropout(0.5),
+            nn.Dropout(0.6),
             nn.Linear(128, group_num_classes)
         )
         
@@ -66,9 +66,8 @@ class EndModel(nn.Module):
         x1 = x1.view(B*PL, SEQ, -1)
         x1 = self.norm1(x1)
         x2, _ = self.gru1(x1) #(B*PL, SEQ, 512)
-        x2 = x2[:, -1, :] #Take the last hidden
         
-        y1 = self.fc1(x2) #(B*PL, person_classes)
+        y1 = self.fc1(x2[:, -1, :]) #(B*PL, person_classes)
         
         
         x = torch.cat((x1, x2), dim=2) # (B*PL, SEQ, 512*3)
