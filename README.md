@@ -1,12 +1,7 @@
-
-<div align="center">
-  <img src="https://github.com/user-attachments/assets/22cc8c54-f3c7-4900-a9db-3e37fffac5ad" alt="Background Image" width="95%" />
-</div>
-
 <h1 align="center">Group Activity Recognition</h1>
 
 <p align="center">
-  An implementation of the <strong>CVPR 2016 paper</strong>, <a href="https://arxiv.org/pdf/1607.02643"><em>A Hierarchical Deep Temporal Model for Group Activity Recognition</em></a>.  
+  An implementation of the <strong>CVPR 2016 paper</strong>, <a href="https://arxiv.org/abs/1511.06040"><em>A Hierarchical Deep Temporal Model for Group Activity Recognition</em></a>.  
   This project focuses on recognizing group activities in volleyball matches using deep learning, temporal modeling, and player-level feature aggregation.
 </p>
 
@@ -51,7 +46,7 @@ pip3 install -r requirements.txt
 Use the Kaggle Hub API:
 ```python
 import kagglehub
-path = kagglehub.model_download("yourusername/group-activity-recognition/pyTorch/v1")
+path = kagglehub.model_download("omaryasserace/endmodelv2/pyTorch/default")
 print("Path to model files:", path)
 ```
 
@@ -61,9 +56,16 @@ print("Path to model files:", path)
 
 The dataset is the **Volleyball Dataset** introduced in the CVPR 2016 paper.
 
-- **Frames**: 4,830 annotated frames from 55 volleyball videos.
+- **Frames**: 4,831 annotated frames from 55 volleyball videos.
 - **Group Activities**: 8 classes (e.g., left spike, right pass, winpoint).
 - **Player Actions**: 9 classes (e.g., waiting, setting, spiking).
+- **Number of Instances**: | Baseline      | Original Paper Acc | My Accuracy | My F1 Score |
+|---------------|-------------------|-------------|-------------|
+| B1            | 64.6%             | XX.XX%      | XX.XX%      |
+| B3            | 73.2%             | XX.XX%      | XX.XX%      |
+| B4            | 68.0%             | XX.XX%      | XX.XX%      |
+| B5            | 70.3%             | XX.XX%      | XX.XX%      |
+| END (B7+B8)   | ~83–89%           | XX.XX%      | XX.XX%      |
 
 Train/test split and annotation format are identical to the original paper.  
 See the paper for more details: [link](https://github.com/mostafa-saad/deep-activity-rec).
