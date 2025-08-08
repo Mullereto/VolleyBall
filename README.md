@@ -90,7 +90,8 @@ The dataset is the **Volleyball Dataset** introduced in the CVPR 2016 paper.
 - **Validation Videos**: 0, 2, 8, 12, 17, 19, 24, 26, 27, 28, 30, 33, 46, 49, 51.
 - **Test Videos**: 4, 5, 9, 11, 14, 20, 21, 25, 29, 34, 35, 37, 43, 44, 45, 47.
 
-For download the dataset and further information about the dataset, see the paper for more details: [link](https://github.com/mostafa-saad/deep-activity-rec).
+- For download the dataset: [link](https://github.com/mostafa-saad/deep-activity-rec).
+- further information about the dataset, see the paper for more details: [link](https://arxiv.org/abs/1511.06040).
 
 ---
 
@@ -122,13 +123,14 @@ Combines concepts from B7 and B8:
 - <img src="https://github.com/user-attachments/assets/c62ee368-8027-4e83-a5a4-687b7adebe5a" width="60%" alt="Original Paper Accuracy">
 
 - **My Accuracy**
-| Baseline      | My Accuracy | My F1 Score |
-|---------------|-------------|-------------|
-| B1            | 75%         | 76%         |
-| B3            | 80%         | 81%         |
-| B4            | 74%         | 76%         |
-| B5            | 87%         | 87%         |
-| END (B7+B8)   | 89%         | 89%         |
+
+ | Baseline      | My Accuracy | My F1 Score |
+ |---------------|-------------|-------------|
+ | B1            | 75%         | 76%         |
+ | B3            | 80%         | 81%         |
+ | B4            | 74%         | 76%         |
+ | B5            | 87%         | 87%         |
+ | END (B7+B8)   | 89%         | 89%         |
 
 
 ---
