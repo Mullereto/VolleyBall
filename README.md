@@ -59,13 +59,14 @@ The dataset is the **Volleyball Dataset** introduced in the CVPR 2016 paper.
 - **Frames**: 4,831 annotated frames from 55 volleyball videos.
 - **Group Activities**: 8 classes (e.g., left spike, right pass, winpoint).
 - **Player Actions**: 9 classes (e.g., waiting, setting, spiking).
-- **Number of Instances**: | Baseline      | Original Paper Acc | My Accuracy | My F1 Score |
-|---------------|-------------------|-------------|-------------|
-| B1            | 64.6%             | XX.XX%      | XX.XX%      |
-| B3            | 73.2%             | XX.XX%      | XX.XX%      |
-| B4            | 68.0%             | XX.XX%      | XX.XX%      |
-| B5            | 70.3%             | XX.XX%      | XX.XX%      |
-| END (B7+B8)   | ~83–89%           | XX.XX%      | XX.XX%      |
+- **Number of Instances**:
+  | Baseline      | Original Paper Acc | My Accuracy | My F1 Score |
+  |---------------|-------------------|-------------|-------------|
+  | B1            | 64.6%             | XX.XX%      | XX.XX%      |
+  | B3            | 73.2%             | XX.XX%      | XX.XX%      |
+  | B4            | 68.0%             | XX.XX%      | XX.XX%      |
+  | B5            | 70.3%             | XX.XX%      | XX.XX%      |
+  | END (B7+B8)   | ~83–89%           | XX.XX%      | XX.XX%      |
 
 Train/test split and annotation format are identical to the original paper.  
 See the paper for more details: [link](https://github.com/mostafa-saad/deep-activity-rec).
