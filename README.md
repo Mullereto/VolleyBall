@@ -124,13 +124,13 @@ Combines concepts from B7 and B8:
 
 - **My Accuracy**
 
- | Baseline      | My Accuracy | My F1 Score |
- |---------------|-------------|-------------|
- | B1            | 75%         | 76%         |
- | B3            | 80%         | 81%         |
- | B4            | 74%         | 76%         |
- | B5            | 87%         | 87%         |
- | END (B7+B8)   | 89%         | 89%         |
+  | Baseline      | My Accuracy | My F1 Score |
+  |---------------|-------------|-------------|
+  | B1            | 75%         | 76%         |
+  | B3            | 80%         | 81%         |
+  | B4            | 74%         | 76%         |
+  | B5            | 87%         | 87%         |
+  | END (B7+B8)   | 89%         | 89%         |
 
 
 ---
@@ -138,9 +138,9 @@ Combines concepts from B7 and B8:
 ## Interesting Observations
 
 - **Pooling without team separation** (B5) often confused left/right activities (e.g., left pass vs right pass).
-- <img src="results/baseline5/Step_B/Confusion Matrix.png" width="60%" alt="Confusion Matrix B5">
+  <img src="results/baseline5/Step_B/Confusion Matrix.png" width="60%" alt="Confusion Matrix B5">
 - **Team-dependent pooling** in END baseline significantly reduced directional confusion by keeping positional context.
-- <img src="END/Confusion Matrix.png" width="60%" alt="Confusion Matrix END">
+  <img src="END/Confusion Matrix.png" width="60%" alt="Confusion Matrix END">
 - Temporal models (B4, B5, END) outperformed frame-based models (B1, B3) in nearly all cases.
 
 ---
