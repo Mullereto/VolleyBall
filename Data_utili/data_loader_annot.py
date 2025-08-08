@@ -3,6 +3,7 @@ import os
 import pickle
 from typing import List
 from boxinfo import BoxInfo
+import matplotlib.pyplot as plt
 
 dataset_root = r'D:\project\Python\DL(Mostafa saad)\Project\VolleyBall\Data'
 
@@ -48,9 +49,15 @@ def vis_clip(annot_path, video_dir):
             cv2.rectangle(image, (x1, y1), (x2, y2), (0, 255, 0), 2)
             cv2.putText(image, box_info.category, (x1, y1 - 10), font, 0.5, (0, 255, 0), 2)
 
-        cv2.imshow('Image', image)
-        cv2.waitKey(180)
-    cv2.destroyAllWindows()
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+
+        # Display using matplotlib
+        plt.imshow(image)
+        plt.title(f"Frame {frame_id}")
+        plt.axis('off')
+        plt.pause(0.2)
+        plt.clf()
+
 
 
 
@@ -130,16 +137,15 @@ def test_pkl_version():
 
     boxes: List[BoxInfo] = videos_annot['0']['13456']['category']
     print(boxes)
-    print(boxes)
 
 
 if __name__ == '__main__':
-    #annot_file = f'{dataset_root}/volleyball_tracking_annotation/0/3596/3596.txt'
-    #clip_dir_path = os.path.dirname(annot_file).replace('volleyball_tracking_annotation', 'videos')
+    annot_file = f'{dataset_root}/volleyball_tracking_annotation/0/3596/3596.txt'
+    clip_dir_path = os.path.dirname(annot_file).replace('volleyball_tracking_annotation', 'videos')
     #
-    #vis_clip(annot_file, clip_dir_path)
+    vis_clip(annot_file, clip_dir_path)
 
     #create_pkl_version()
 
     # Test the created dataset
-    test_pkl_version()
+    #test_pkl_version()
