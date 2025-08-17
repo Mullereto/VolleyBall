@@ -137,7 +137,7 @@ Combines concepts from B7 and B8:
 
 ## Interesting Observations
 
-- **Pooling without team separation** (B5) often confused left/right activities (e.g., left pass vs right pass).
+- **Pooling without team separation** (B5) often confused left/right activities (e.g., lwinpoint vs rwinpoint).
   <img src="results/baseline5/Step_B/Confusion Matrix.png" width="60%" alt="Confusion Matrix B5">
 - **Team-dependent pooling** in END baseline significantly reduced directional confusion by keeping positional context.
   <img src="END/Confusion Matrix.png" width="60%" alt="Confusion Matrix END">
