@@ -34,7 +34,7 @@
 
 ### 1. Clone the Repository
 ```bash
-git clone https://github.com/yourusername/group-activity-recognition.git
+git clone https://github.com/Mullereto/VolleyBall.git
 ```
 
 ### 2. Install the Required Dependencies
